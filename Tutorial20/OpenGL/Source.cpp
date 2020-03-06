@@ -70,6 +70,7 @@ int main()
 	// Texture container
 	GLuint metalTex;
 	GLuint marbleTex;
+	GLuint turfTex;
 
 	// build and compile our shader program
 	GLSL_ERROR glsl_err = ShaderLoader::createShaderProgram(
@@ -113,11 +114,6 @@ int main()
 	GLuint uMatSpecularCol = glGetUniformLocation(basicShader, "matSpecularColour");
 	GLuint uMatSpecularExp = glGetUniformLocation(basicShader, "matSpecularExponent");
 
-	GLuint light1 = glGetUniformLocation(basicShader, "light1");
-	GLuint light2 = glGetUniformLocation(basicShader, "light2");
-	GLuint light3 = glGetUniformLocation(basicShader, "light3");
-	GLuint light4 = glGetUniformLocation(basicShader, "light4");
-
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -134,9 +130,8 @@ int main()
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 projection = camera.getProjectionMatrix();
 
-		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0), glm::vec3(0.3, 0.3, 0.3));
+		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0), glm::vec3(5, 5, 5));
 		glm::vec3 eyePos = camera.getCameraPosition();
-
 
 		glUseProgram(basicShader); //Use the Basic shader
 
@@ -156,7 +151,7 @@ int main()
 
 		glUniformMatrix4fv(glGetUniformLocation(basicShader, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(basicShader, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
+		
 		glUniformMatrix4fv(glGetUniformLocation(basicShader, "model"), 1, GL_FALSE, glm::value_ptr(planeModel));
 		plane.draw(basicShader); //Draw the plane
 
