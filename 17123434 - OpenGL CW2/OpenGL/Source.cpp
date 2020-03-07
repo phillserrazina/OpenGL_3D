@@ -15,11 +15,14 @@ Camera_settings camera_settings{ 1200, 1000, 0.1, 100.0 };
 Timer timer;
 
 // Instantiate the camera object with basic data
-Camera camera(camera_settings, glm::vec3(0.0, 5.0, 40.0));
+Camera camera(camera_settings, glm::vec3(0.0, 1.0, 0.0));
 
 double lastX = camera_settings.screenWidth / 2.0f;
 double lastY = camera_settings.screenHeight / 2.0f;
 
+#pragma region Light Related Stuff
+
+// Holds information about the light to be rendered
 struct Light {
 	glm::vec4 ambient;
 	glm::vec4 position;
@@ -28,14 +31,58 @@ struct Light {
 	Light(glm::vec4 amb, glm::vec4 pos, glm::vec4 col) : ambient(amb), position(pos), colour(col) {}
 };
 
+// ========= AMBIENT STRENGTHS =========
 glm::vec4 weakAmbient(1.0, 1.0, 1.0, 1.0);
 glm::vec4 normalAmbient(5.0, 5.0, 5.0, 1.0);
 glm::vec4 strongAmbient(10.0, 10.0, 10.0, 1.0);
 
+// ========= LIGHT COLOURS =========
 glm::vec4 white(1.0, 1.0, 1.0, 1.0);
 glm::vec4 red(1.0, 0.0, 0.0, 1.0);
 glm::vec4 green(0.0, 1.0, 0.0, 1.0);
 glm::vec4 blue(0.0, 0.0, 1.0, 1.0);
+
+#pragma endregion
+
+#pragma region Model Functions
+
+glm::mat4 defaultTranslate = glm::translate(glm::mat4(1.0), glm::vec3(0.0, 0.0, 0.0));
+//glm::mat4 defaultRotate = glm::rotate(glm::mat4(1.0), 0.0, glm::vec3(1.0, 1.0, 1.0));
+glm::mat4 defaultScale = glm::scale(glm::mat4(1.0), glm::vec3(1.0, 1.0, 1.0));
+
+// This struct holds information about the model to be rendered.
+// Use this to render an object instead of rendering it directly from the model.
+struct Object {
+	Model model;
+	glm::mat4 translation;
+	// glm::mat4 rotation;
+	glm::mat4 scale;
+
+	Object(Model m, glm::mat4 t = defaultTranslate, /*glm::mat4, */ glm::mat4 s = defaultScale) :
+		model(m), translation(t), scale(s) {}
+
+	// New translation, rotation and scale are passed as paramaters for hierarchical purposes.
+	void Render(GLuint shader, glm::mat4 t = defaultTranslate, glm::mat4 s = defaultScale) {
+		glm::mat4 myModelMat = translation * scale * t * s;
+		//if (t != defaultTranslate) myModelMat *= t;
+		//if (s != defaultScale) myModelMat *= s;
+		glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(myModelMat));
+		model.draw(shader); //Draw the plane
+	}
+};
+
+void RenderObject(Object object, GLuint shader) {
+	object.Render(shader);
+}
+
+void RenderObject(Object objects[], int numOfItems, GLuint shader, glm::mat4 t = defaultTranslate, glm::mat4 s = defaultScale) {
+	for (int i = 0; i < numOfItems; i++) {
+		objects[i].Render(shader, t, s);
+	}
+}
+
+#pragma endregion
+
 
 int main()
 {
@@ -79,14 +126,9 @@ int main()
 	glEnable(GL_CULL_FACE);		//Enables face culling
 	glFrontFace(GL_CCW);		//Specifies which winding order if front facing
 
-	////	Shaders - Textures - Models	////
+	// ======================================= SHADER =======================================
 
 	GLuint basicShader;
-
-	// Texture container
-	GLuint metalTex;
-	GLuint marbleTex;
-	GLuint turfTex;
 
 	// build and compile our shader program
 	GLSL_ERROR glsl_err = ShaderLoader::createShaderProgram(
@@ -94,11 +136,24 @@ int main()
 		string("Resources\\Shaders\\Basic_shader.frag"),
 		&basicShader);
 
-	Model turf("Resources\\Models\\turfWithMat.obj");
+	// ======================================= OBJECTS =======================================
 
-	//Light Data///////////////////////////////////////////////
-	// Lights
-	Light l1(weakAmbient, glm::vec4(0.0, 2.0, 0.0, 1.0), white);
+	Model turf("Resources\\Models\\Turf\\turfWithMat.obj");						// Load the model
+	glm::mat4 turfScaleMat = glm::scale(glm::mat4(1.0), glm::vec3(5, 5, 5));	// Set up translation/rotation/scale
+	Object turfObj(turf, defaultTranslate, turfScaleMat);						// Initialize the object
+
+	Model stands("Resources\\Models\\Stands\\Stands.obj");											// Load the model
+	glm::mat4 standsTranslationMat = glm::translate(glm::mat4(1.0), glm::vec3(0.0, -2.5, 0.0));		// Set up translation/rotation/scale
+	glm::mat4 standsScaleMat = glm::scale(glm::mat4(1.0), glm::vec3(9.2, 10, 10));					//
+	Object standsObj(stands, standsTranslationMat, standsScaleMat);									// Initialize the object
+
+	glm::mat4 stadiumScaleMat = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));	// Set up translation/rotation/scale
+	Object stadium[] = { turfObj, standsObj };											// Initialize the object
+	
+
+	// ======================================= LIGHTS =======================================
+
+	Light l1(normalAmbient, glm::vec4(0.0, 8.0, 0.0, 1.0), white);
 	Light l2(weakAmbient, glm::vec4(20.0, 2.0, 0.0, 1.0), red);
 	Light l3(weakAmbient, glm::vec4(-20.0, 2.0, 0.0, 1.0), blue);
 
@@ -111,11 +166,9 @@ int main()
 	// Materials
 	GLfloat mat_amb_diff[] = { 1.0, 1.0, 1.0, 1.0 };	// Texture map will provide ambient and diffuse.
 	GLfloat mat_specularCol[] = { 1.0, 1.0, 1.0, 1.0 }; // White highlight
-	GLfloat mat_specularExp = 32.0;					// Shiny surface
+	GLfloat mat_specularExp = 32.0;						// Shiny surface
 
-	
-
-	//Uniform Locations - Basic Shader////////////////////////////////////////////
+	//======================================= BASIC SHADER UNIFORM LOCATION =======================================
 	// Get unifom locations in shader
 	GLuint lightAmbArr = glGetUniformLocation(basicShader, "lightAmbArray");
 	GLuint lightPosArr = glGetUniformLocation(basicShader, "lightPosArray");
@@ -135,18 +188,14 @@ int main()
 		// input
 		processInput(window);
 		timer.tick();
-		
+
 		// render
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 turfModel = glm::mat4(1.0);
 		glm::mat4 view = camera.getViewMatrix();
 		glm::mat4 projection = camera.getProjectionMatrix();
-
-		glm::mat4 scaleMat = glm::scale(glm::mat4(1.0), glm::vec3(5, 5, 5));
 		glm::vec3 eyePos = camera.getCameraPosition();
-
 
 		glUseProgram(basicShader); //Use the Basic shader
 
@@ -169,9 +218,8 @@ int main()
 		glUniformMatrix4fv(glGetUniformLocation(basicShader, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(basicShader, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-		turfModel = scaleMat;
-		glUniformMatrix4fv(glGetUniformLocation(basicShader, "model"), 1, GL_FALSE, glm::value_ptr(turfModel));
-		turf.draw(basicShader); //Draw the plane
+		// Render the Stadium
+		RenderObject(stadium, 2, basicShader, defaultTranslate, stadiumScaleMat);
 
 		// glfw: swap buffers and poll events
 		glfwSwapBuffers(window);
@@ -182,6 +230,8 @@ int main()
 	glfwTerminate();
 	return 0;
 }
+
+#pragma region Engine Stuff
 
 float camSpeed = 2.0f;
 
@@ -241,3 +291,5 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.processMouseScroll(yoffset);
 }
+
+#pragma endregion
