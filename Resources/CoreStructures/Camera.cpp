@@ -16,6 +16,9 @@ Camera::Camera(Camera_settings camera_settings)
 	this->Position = glm::vec3(0.0f, 0.5f, 5.0f);
 	this->WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->Target = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	this->state = FREE;
+
 	updateCameraVectors();
 }
 
@@ -36,6 +39,9 @@ Camera::Camera(Camera_settings camera_settings, glm::vec3 position)
 	this->Position = position;
 	this->WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->Target = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	this->state = FREE;
+
 	updateCameraVectors();
 }
 
@@ -56,6 +62,9 @@ Camera::Camera(Camera_settings camera_settings, glm::vec3 position, glm::vec3 ta
 	this->WorldUp = up;
 	this->Yaw = yaw;
 	this->Pitch = pitch;
+
+	this->state = FREE;
+
 	updateCameraVectors();
 }
 
@@ -75,6 +84,9 @@ Camera::Camera(Camera_settings camera_settings, double posX, double posY, double
 	this->WorldUp = glm::vec3(upX, upY, upZ);
 	this->Yaw = yaw;
 	this->Pitch = pitch;
+
+	this->state = FREE;
+
 	updateCameraVectors();
 }
 
@@ -93,6 +105,26 @@ glm::mat4 Camera::getProjectionMatrix()
 glm::vec3 Camera::getCameraPosition()
 {
 	return this->Position;
+}
+
+void Camera::setState(Camera_State state) {
+	this->state = state;
+}
+
+Camera_State Camera::getState() {
+	return this->state;
+}
+
+void Camera::followPosition(glm::vec3 posToFollow, glm::vec3 offset, glm::vec2 lookAtRot) {
+	glm::vec3 finalPos = glm::vec3(posToFollow.x + offset.x,
+									posToFollow.y + offset.y,
+									posToFollow.z + offset.z);
+
+	this->Yaw = lookAtRot.x;
+	this->Pitch = lookAtRot.y;
+
+	this->Position = finalPos;
+	updateCameraVectors();
 }
 
 // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)

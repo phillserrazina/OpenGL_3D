@@ -129,6 +129,7 @@
     <ClCompile Include="..\..\Resources\CoreStructures\Mesh.cpp" />
     <ClCompile Include="..\..\Resources\CoreStructures\Model.cpp" />
     <ClCompile Include="..\..\Resources\CoreStructures\ShaderLoader.cpp" />
+    <ClCompile Include="..\..\Resources\CoreStructures\SkinnedMesh.cpp" />
     <ClCompile Include="..\..\Resources\CoreStructures\TextureLoader.cpp" />
     <ClCompile Include="..\..\Resources\CoreStructures\Timer.cpp" />
     <ClCompile Include="glad.c" />
@@ -139,6 +140,7 @@
     <ClInclude Include="..\..\Resources\CoreStructures\Mesh.h" />
     <ClInclude Include="..\..\Resources\CoreStructures\Model.h" />
     <ClInclude Include="..\..\Resources\CoreStructures\ShaderLoader.h" />
+    <ClInclude Include="..\..\Resources\CoreStructures\SkinnedMesh.h" />
     <ClInclude Include="..\..\Resources\CoreStructures\stb_image.h" />
     <ClInclude Include="..\..\Resources\CoreStructures\TextureLoader.h" />
     <ClInclude Include="..\..\Resources\CoreStructures\Timer.h" />

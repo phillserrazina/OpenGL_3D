@@ -5,6 +5,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+enum Camera_State
+{
+	FOLLOWING,
+	FREE
+};
+
 // Defines several enum possible options for camera movement to easier understand the direction
 enum Camera_Movement 
 {
@@ -59,6 +65,8 @@ private:
 	// Calculates the front vector from the Camera's (updated) Euler Angles
 	void updateCameraVectors();
 
+	Camera_State state;
+
 public:
 
 	// Default Constructor
@@ -81,6 +89,13 @@ public:
 
 	// Returns the camera position
 	glm::vec3 getCameraPosition();
+
+	// Camera state setter/getter
+	void setState(Camera_State state);
+	Camera_State getState();
+
+	// Follows the target position
+	void followPosition(glm::vec3 posToFollow, glm::vec3 offset, glm::vec2 lookAtRot);
 
 	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 	void processKeyboard(Camera_Movement direction, double deltaTime);

@@ -1,0 +1,16 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl Metal
+	Ns 62.745098
+	Ka 0.500000 0.500000 0.500000
+	Kd 0.800000 0.800000 0.800000
+	Ks 0.250000 0.250000 0.250000
+	Ke 0.000000 0.000000 0.000000
+	Ni 1.000000
+	d 0.000000
+	illum 6
+	map_Bump -bm 0.350042 Metal_Normal.png
+	map_Kd Metal_Doff.png
+	map_Ks Metal_Spec.png
+	map_d Metal_Doff.png

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <sstream> 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -16,6 +17,7 @@
 #include "Timer.h"
 #include "Model.h"
 #include "Camera.h"
+#include "SkinnedMesh.h"
 #include "ShaderLoader.h"
 #include "TextureLoader.h"
 
